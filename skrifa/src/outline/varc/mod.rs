@@ -77,6 +77,7 @@ impl<'a> BaseOutlines<'a> {
         }
     }
 
+    #[cfg(feature = "hinting")]
     fn font(&self) -> &FontRef<'a> {
         match self {
             Self::Glyf(glyf) => &glyf.font,
@@ -170,6 +171,7 @@ impl<'a> Outlines<'a> {
         })
     }
 
+    #[cfg(feature = "hinting")]
     pub fn units_per_em(&self) -> u16 {
         self.units_per_em
     }
@@ -186,6 +188,7 @@ impl<'a> Outlines<'a> {
         false
     }
 
+    #[cfg(feature = "hinting")]
     pub fn font(&self) -> &FontRef<'a> {
         self.base.font()
     }

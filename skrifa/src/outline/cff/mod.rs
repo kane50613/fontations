@@ -36,6 +36,7 @@ use std::ops::Range;
 /// subfont for that glyph.
 #[derive(Clone)]
 pub(crate) struct Outlines<'a> {
+    #[cfg(feature = "hinting")]
     pub(crate) font: FontRef<'a>,
     pub(crate) glyph_metrics: GlyphHMetrics<'a>,
     offset_data: FontData<'a>,
@@ -66,6 +67,7 @@ impl<'a> Outlines<'a> {
         let top_dict_data = cff1.top_dicts().get(0).ok()?;
         let top_dict = TopDict::new(cff1.offset_data().as_bytes(), top_dict_data, false).ok()?;
         Some(Self {
+            #[cfg(feature = "hinting")]
             font: font.clone(),
             glyph_metrics,
             offset_data: cff1.offset_data(),
@@ -82,6 +84,7 @@ impl<'a> Outlines<'a> {
         let table_data = cff2.offset_data().as_bytes();
         let top_dict = TopDict::new(table_data, cff2.top_dict_data(), true).ok()?;
         Some(Self {
+            #[cfg(feature = "hinting")]
             font: font.clone(),
             glyph_metrics,
             offset_data: cff2.offset_data(),
@@ -96,6 +99,7 @@ impl<'a> Outlines<'a> {
         self.version == 2
     }
 
+    #[cfg(feature = "hinting")]
     pub fn units_per_em(&self) -> u16 {
         self.units_per_em
     }
@@ -106,6 +110,7 @@ impl<'a> Outlines<'a> {
     }
 
     /// Returns the number of available subfonts.
+    #[cfg(feature = "hinting")]
     pub fn subfont_count(&self) -> u32 {
         // All CFF fonts have at least one logical subfont.
         self.top_dict.font_dicts.count().max(1)

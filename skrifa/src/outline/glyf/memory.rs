@@ -53,26 +53,37 @@ impl<'a> HarfBuzzOutlineMemory<'a> {
 pub(crate) struct FreeTypeOutlineMemory<'a> {
     pub unscaled: &'a mut [Point<i32>],
     pub scaled: &'a mut [Point<F26Dot6>],
+    #[cfg(feature = "hinting")]
     pub original_scaled: &'a mut [Point<F26Dot6>],
     pub contours: &'a mut [u16],
     pub flags: &'a mut [PointFlags],
     pub deltas: &'a mut [Point<Fixed>],
     pub iup_buffer: &'a mut [Point<Fixed>],
     pub composite_deltas: &'a mut [Point<Fixed>],
+    #[cfg(feature = "hinting")]
     pub stack: &'a mut [i32],
+    #[cfg(feature = "hinting")]
     pub cvt: &'a mut [i32],
+    #[cfg(feature = "hinting")]
     pub storage: &'a mut [i32],
+    #[cfg(feature = "hinting")]
     pub twilight_scaled: &'a mut [Point<F26Dot6>],
+    #[cfg(feature = "hinting")]
     pub twilight_original_scaled: &'a mut [Point<F26Dot6>],
+    #[cfg(feature = "hinting")]
     pub twilight_flags: &'a mut [PointFlags],
 }
 
 impl<'a> FreeTypeOutlineMemory<'a> {
     pub(super) fn new(outline: &Outline, buf: &'a mut [u8], hinting: Hinting) -> Option<Self> {
+        #[cfg(feature = "hinting")]
         let hinted = outline.has_hinting && hinting == Hinting::Embedded;
+        #[cfg(not(feature = "hinting"))]
+        let _ = hinting;
         let (scaled, buf) = alloc_slice(buf, outline.points)?;
         let (unscaled, buf) = alloc_slice(buf, outline.max_other_points)?;
         // We only need original scaled points when hinting
+        #[cfg(feature = "hinting")]
         let (original_scaled, buf) = if hinted {
             alloc_slice(buf, outline.max_other_points)?
         } else {
@@ -93,12 +104,14 @@ impl<'a> FreeTypeOutlineMemory<'a> {
             )
         };
         // Hinting value stack
+        #[cfg(feature = "hinting")]
         let (stack, buf) = if hinted {
             alloc_slice(buf, outline.max_stack)?
         } else {
             (Default::default(), buf)
         };
         // Copy-on-write buffers for CVT and storage area
+        #[cfg(feature = "hinting")]
         let (cvt, storage, buf) = if hinted {
             let (cvt, buf) = alloc_slice(buf, outline.cvt_count)?;
             let (storage, buf) = alloc_slice(buf, outline.storage_count)?;
@@ -107,6 +120,7 @@ impl<'a> FreeTypeOutlineMemory<'a> {
             (Default::default(), Default::default(), buf)
         };
         // Twilight zone point buffers
+        #[cfg(feature = "hinting")]
         let (twilight_scaled, twilight_original_scaled, buf) = if hinted {
             let (scaled, buf) = alloc_slice(buf, outline.max_twilight_points)?;
             let (original_scaled, buf) = alloc_slice(buf, outline.max_twilight_points)?;
@@ -115,8 +129,12 @@ impl<'a> FreeTypeOutlineMemory<'a> {
             (Default::default(), Default::default(), buf)
         };
         let (contours, buf) = alloc_slice(buf, outline.contours)?;
+        #[cfg(feature = "hinting")]
         let (flags, buf) = alloc_slice(buf, outline.points)?;
+        #[cfg(not(feature = "hinting"))]
+        let (flags, _) = alloc_slice(buf, outline.points)?;
         // Twilight zone point flags
+        #[cfg(feature = "hinting")]
         let twilight_flags = if hinted {
             alloc_slice(buf, outline.max_twilight_points)?.0
         } else {
@@ -125,17 +143,24 @@ impl<'a> FreeTypeOutlineMemory<'a> {
         Some(Self {
             unscaled,
             scaled,
+            #[cfg(feature = "hinting")]
             original_scaled,
             contours,
             flags,
             deltas,
             iup_buffer,
             composite_deltas,
+            #[cfg(feature = "hinting")]
             stack,
+            #[cfg(feature = "hinting")]
             cvt,
+            #[cfg(feature = "hinting")]
             storage,
+            #[cfg(feature = "hinting")]
             twilight_scaled,
+            #[cfg(feature = "hinting")]
             twilight_original_scaled,
+            #[cfg(feature = "hinting")]
             twilight_flags,
         })
     }

@@ -96,6 +96,7 @@ where
     }
 
     /// Shortens the vector, keeping the first `len` elements.
+    #[cfg(feature = "hinting")]
     pub fn truncate(&mut self, len: usize) {
         match &mut self.0 {
             Storage::Inline(_buf, inline_len) => {
