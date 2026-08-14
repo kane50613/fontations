@@ -16,13 +16,17 @@ repository.workspace = true
 all-features = true
 
 [features]
-default = ["std", "autohint_shaping"]
+default = ["std", "hinting", "autohint_shaping"]
 std = ["read-fonts/std"]
 traversal = ["std", "read-fonts/experimental_traverse"]
+# Enables the TrueType hinting interpreter and the autohinter. Disabling it
+# removes `HintingInstance` and shrinks binaries that only draw unhinted
+# outlines.
+hinting = []
 # Enables extended shaping support for the autohinter. Enabled by default.
 # This exists as a feature because shaping support is "best effort" and
 # we want the ability to disable it for testing against FreeType.
-autohint_shaping = []
+autohint_shaping = ["hinting"]
 # Enables experimental implementations of proposed changes to the spec
 # as discussed at https://github.com/harfbuzz/boring-expansion-spec
 spec_next = ["read-fonts/spec_next"]
