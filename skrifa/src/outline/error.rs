@@ -5,6 +5,7 @@ use read_fonts::types::GlyphId;
 
 pub use read_fonts::ps::error::Error as CffError;
 
+#[cfg(feature = "hinting")]
 pub use super::glyf::HintError;
 
 /// Errors that may occur when drawing glyphs.
@@ -21,6 +22,7 @@ pub enum DrawError {
     /// Glyph outline contains too many points.
     TooManyPoints(GlyphId),
     /// Error occurred during hinting.
+    #[cfg(feature = "hinting")]
     HintingFailed(HintError),
     /// An anchor point had invalid indices.
     InvalidAnchorPoint(GlyphId, u16),
@@ -38,6 +40,7 @@ pub enum DrawError {
     HarfBuzzHintingUnsupported,
 }
 
+#[cfg(feature = "hinting")]
 impl From<HintError> for DrawError {
     fn from(value: HintError) -> Self {
         Self::HintingFailed(value)
@@ -62,6 +65,7 @@ impl fmt::Display for DrawError {
                 read_fonts::limits::MAX_RECURSION_DEPTH,
             ),
             Self::TooManyPoints(gid) => write!(f, "Glyph {gid} contains more than 64k points"),
+            #[cfg(feature = "hinting")]
             Self::HintingFailed(e) => write!(f, "{e}"),
             Self::InvalidAnchorPoint(gid, index) => write!(
                 f,

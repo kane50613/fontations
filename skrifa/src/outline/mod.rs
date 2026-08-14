@@ -78,10 +78,13 @@
 //! # }
 //! ```
 
+#[cfg(feature = "hinting")]
 pub mod autohint;
 mod cff;
 mod glyf;
+#[cfg(feature = "hinting")]
 mod hint;
+#[cfg(feature = "hinting")]
 mod hint_reliant;
 mod metrics;
 mod unscaled;
@@ -93,7 +96,9 @@ mod testing;
 pub mod error;
 pub mod pen;
 
+#[cfg(feature = "hinting")]
 pub use autohint::GlyphStyles;
+#[cfg(feature = "hinting")]
 pub use hint::{
     Engine, HintingInstance, HintingMode, HintingOptions, LcdLayout, SmoothMode, Target,
 };
@@ -103,8 +108,11 @@ use raw::FontRef;
 pub use {error::DrawError, pen::OutlinePen};
 
 use self::glyf::{FreeTypeScaler, HarfBuzzScaler};
-use super::instance::{LocationRef, NormalizedCoord, Size};
+use super::instance::{LocationRef, Size};
 use core::fmt::Debug;
+
+#[cfg(feature = "hinting")]
+use super::instance::NormalizedCoord;
 use pen::PathStyle;
 use read_fonts::{types::GlyphId, TableProvider};
 
@@ -198,6 +206,7 @@ impl<'a> DrawSettings<'a> {
     ///
     /// The font size, location in variation space and hinting mode are
     /// defined by the current configuration of the given hinting instance.
+    #[cfg(feature = "hinting")]
     pub fn hinted(instance: &'a HintingInstance, is_pedantic: bool) -> Self {
         Self {
             instance: DrawInstance::Hinted {
@@ -232,6 +241,7 @@ impl<'a> DrawSettings<'a> {
 
 enum DrawInstance<'a> {
     Unhinted(Size, LocationRef<'a>),
+    #[cfg(feature = "hinting")]
     Hinted {
         instance: &'a HintingInstance,
         is_pedantic: bool,
@@ -253,6 +263,7 @@ impl From<Size> for DrawSettings<'_> {
     }
 }
 
+#[cfg(feature = "hinting")]
 impl<'a> From<&'a HintingInstance> for DrawSettings<'a> {
     fn from(value: &'a HintingInstance) -> Self {
         DrawSettings::hinted(value, false)
@@ -358,6 +369,7 @@ impl<'a> OutlineGlyph<'a> {
             (DrawInstance::Unhinted(size, location), PathStyle::HarfBuzz) => {
                 self.draw_unhinted(size, location, settings.memory, settings.path_style, pen)
             }
+            #[cfg(feature = "hinting")]
             (
                 DrawInstance::Hinted {
                     instance: hinting_instance,
@@ -389,6 +401,7 @@ impl<'a> OutlineGlyph<'a> {
                     Ok(metrics)
                 }
             }
+            #[cfg(feature = "hinting")]
             (DrawInstance::Hinted { .. }, PathStyle::HarfBuzz) => {
                 Err(DrawError::HarfBuzzHintingUnsupported)
             }
@@ -536,6 +549,7 @@ impl<'a> OutlineGlyph<'a> {
         }
     }
 
+    #[cfg(feature = "hinting")]
     pub(crate) fn font(&self) -> &FontRef<'a> {
         match &self.kind {
             OutlineKind::Glyf(glyf, ..) => &glyf.font,
@@ -544,6 +558,7 @@ impl<'a> OutlineGlyph<'a> {
         }
     }
 
+    #[cfg(feature = "hinting")]
     fn units_per_em(&self) -> u16 {
         match &self.kind {
             OutlineKind::Cff(cff, ..) => cff.units_per_em(),
@@ -703,9 +718,14 @@ impl<'a> OutlineGlyphCollection<'a> {
     /// so it may be slow. You should cache the result of this function if
     /// possible.
     pub fn require_interpreter(&self) -> bool {
-        self.font()
-            .map(|font| hint_reliant::require_interpreter(font))
-            .unwrap_or_default()
+        #[cfg(feature = "hinting")]
+        {
+            self.font()
+                .map(|font| hint_reliant::require_interpreter(font))
+                .unwrap_or_default()
+        }
+        #[cfg(not(feature = "hinting"))]
+        false
     }
 
     /// Returns true when the font supports hinting at fractional sizes.
@@ -720,6 +740,7 @@ impl<'a> OutlineGlyphCollection<'a> {
         }
     }
 
+    #[cfg(feature = "hinting")]
     pub(crate) fn font(&self) -> Option<&FontRef<'a>> {
         match &self.kind {
             OutlineCollectionKind::Glyf(glyf) => Some(&glyf.font),

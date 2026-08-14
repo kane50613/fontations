@@ -1,5 +1,6 @@
 //! Scaling support for TrueType outlines.
 
+#[cfg(feature = "hinting")]
 mod hint;
 mod memory;
 mod outline;
@@ -8,8 +9,12 @@ mod outline;
 #[allow(unused_imports)]
 use core_maths::CoreFloat;
 
+#[cfg(feature = "hinting")]
 pub use hint::{HintError, HintInstance, HintOutline};
 pub use outline::{Outline, ScaledOutline};
+
+#[cfg(feature = "hinting")]
+use read_fonts::tables::glyf::PointMarker;
 
 use super::{DrawError, GlyphHMetrics, Hinting};
 use memory::{FreeTypeOutlineMemory, HarfBuzzOutlineMemory};
@@ -17,9 +22,7 @@ use raw::FontRef;
 use read_fonts::limits::{MAX_COMPOSITE_EDGES, MAX_OUTLINE_POINTS, MAX_RECURSION_DEPTH};
 use read_fonts::{
     tables::{
-        glyf::{
-            Anchor, CompositeGlyph, CompositeGlyphFlags, Glyf, Glyph, PointMarker, SimpleGlyph,
-        },
+        glyf::{Anchor, CompositeGlyph, CompositeGlyphFlags, Glyf, Glyph, SimpleGlyph},
         gvar::{DeltaBuffers, Gvar},
         hdmx::Hdmx,
         loca::Loca,
@@ -34,16 +37,21 @@ pub const PHANTOM_POINT_COUNT: usize = 4;
 /// Scaler state for TrueType outlines.
 #[derive(Clone)]
 pub struct Outlines<'a> {
+    #[cfg(feature = "hinting")]
     pub(crate) font: FontRef<'a>,
     pub(crate) glyph_metrics: GlyphHMetrics<'a>,
     loca: Loca<'a>,
     glyf: Glyf<'a>,
     gvar: Option<Gvar<'a>>,
     hdmx: Option<Hdmx<'a>>,
+    #[cfg(feature = "hinting")]
     fpgm: &'a [u8],
+    #[cfg(feature = "hinting")]
     prep: &'a [u8],
     cvt_len: u32,
+    #[cfg(feature = "hinting")]
     max_function_defs: u16,
+    #[cfg(feature = "hinting")]
     max_instruction_defs: u16,
     max_twilight_points: u16,
     max_stack_elements: u16,
@@ -66,35 +74,39 @@ impl<'a> Outlines<'a> {
         let loca = font.loca(Some(head.index_to_loc_format() == 1)).ok()?;
         let glyf = font.glyf().ok()?;
         let glyph_metrics = GlyphHMetrics::new(font)?;
-        let (
-            glyph_count,
-            max_function_defs,
-            max_instruction_defs,
-            max_twilight_points,
-            max_stack_elements,
-            max_storage,
-            max_instructions,
-        ) = font
-            .maxp()
-            .map(|maxp| {
-                (
-                    maxp.num_glyphs(),
-                    maxp.max_function_defs().unwrap_or_default(),
-                    maxp.max_instruction_defs().unwrap_or_default(),
-                    // Add 4 for phantom points
-                    // See <https://gitlab.freedesktop.org/freetype/freetype/-/blob/57617782464411201ce7bbc93b086c1b4d7d84a5/src/truetype/ttobjs.c#L1188>
-                    maxp.max_twilight_points()
-                        .unwrap_or_default()
-                        .saturating_add(4),
-                    // Add 32 to match FreeType's heuristic for buggy fonts
-                    // See <https://gitlab.freedesktop.org/freetype/freetype/-/blob/80a507a6b8e3d2906ad2c8ba69329bd2fb2a85ef/src/truetype/ttinterp.c#L356>
-                    maxp.max_stack_elements()
-                        .unwrap_or_default()
-                        .saturating_add(32),
-                    maxp.max_storage().unwrap_or_default(),
-                    maxp.max_size_of_instructions().unwrap_or_default(),
-                )
-            })
+        let maxp = font.maxp().ok();
+        let glyph_count = maxp.as_ref().map(|m| m.num_glyphs()).unwrap_or_default();
+        #[cfg(feature = "hinting")]
+        let max_function_defs = maxp
+            .as_ref()
+            .and_then(|m| m.max_function_defs())
+            .unwrap_or_default();
+        #[cfg(feature = "hinting")]
+        let max_instruction_defs = maxp
+            .as_ref()
+            .and_then(|m| m.max_instruction_defs())
+            .unwrap_or_default();
+        // Add 4 for phantom points
+        // See <https://gitlab.freedesktop.org/freetype/freetype/-/blob/57617782464411201ce7bbc93b086c1b4d7d84a5/src/truetype/ttobjs.c#L1188>
+        let max_twilight_points = maxp
+            .as_ref()
+            .and_then(|m| m.max_twilight_points())
+            .unwrap_or_default()
+            .saturating_add(4);
+        // Add 32 to match FreeType's heuristic for buggy fonts
+        // See <https://gitlab.freedesktop.org/freetype/freetype/-/blob/80a507a6b8e3d2906ad2c8ba69329bd2fb2a85ef/src/truetype/ttinterp.c#L356>
+        let max_stack_elements = maxp
+            .as_ref()
+            .and_then(|m| m.max_stack_elements())
+            .unwrap_or_default()
+            .saturating_add(32);
+        let max_storage = maxp
+            .as_ref()
+            .and_then(|m| m.max_storage())
+            .unwrap_or_default();
+        let max_instructions = maxp
+            .as_ref()
+            .and_then(|m| m.max_size_of_instructions())
             .unwrap_or_default();
         let os2_vmetrics = font
             .os2()
@@ -113,16 +125,21 @@ impl<'a> Outlines<'a> {
         let prefer_interpreter = !(max_instructions == 0 && fpgm.is_empty() && prep.is_empty());
         let cvt_len = font.cvt().map(|cvt| cvt.len() as u32).unwrap_or_default();
         Some(Self {
+            #[cfg(feature = "hinting")]
             font: font.clone(),
             glyph_metrics,
             loca,
             glyf,
             gvar: font.gvar().ok(),
             hdmx: font.hdmx().ok(),
+            #[cfg(feature = "hinting")]
             fpgm,
+            #[cfg(feature = "hinting")]
             prep,
             cvt_len,
+            #[cfg(feature = "hinting")]
             max_function_defs,
+            #[cfg(feature = "hinting")]
             max_instruction_defs,
             max_twilight_points,
             max_stack_elements,
@@ -135,6 +152,7 @@ impl<'a> Outlines<'a> {
         })
     }
 
+    #[cfg(feature = "hinting")]
     pub fn units_per_em(&self) -> u16 {
         self.units_per_em
     }
@@ -180,6 +198,7 @@ impl<'a> Outlines<'a> {
         Scale26Dot6::new(ppem, self.units_per_em)
     }
 
+    #[cfg(feature = "hinting")]
     pub fn compute_hinted_scale(&self, ppem: Option<f32>) -> Scale26Dot6 {
         if let Some(ppem) = ppem {
             if !self.fractional_size_hinting {
@@ -432,6 +451,7 @@ impl Scale26Dot6 {
         Point::new(self.mul(value.x), self.mul(value.y))
     }
 
+    #[cfg(feature = "hinting")]
     pub(crate) fn to_bits(self) -> i32 {
         self.scale.to_bits()
     }
@@ -448,6 +468,7 @@ pub(crate) struct FreeTypeScaler<'a> {
     ppem: f32,
     scale: Scale26Dot6,
     is_hinted: bool,
+    #[cfg(feature = "hinting")]
     pedantic_hinting: bool,
     /// Phantom points. These are 4 extra points appended to the end of an
     /// outline that allow the bytecode interpreter to produce hinted
@@ -455,6 +476,7 @@ pub(crate) struct FreeTypeScaler<'a> {
     ///
     /// See <https://learn.microsoft.com/en-us/typography/opentype/spec/tt_instructing_glyphs#phantom-points>
     phantom: [Point<F26Dot6>; PHANTOM_POINT_COUNT],
+    #[cfg(feature = "hinting")]
     hinter: Option<&'a HintInstance>,
 }
 
@@ -480,12 +502,15 @@ impl<'a> FreeTypeScaler<'a> {
             ppem: ppem.unwrap_or_default(),
             scale,
             is_hinted: false,
+            #[cfg(feature = "hinting")]
             pedantic_hinting: false,
             phantom: Default::default(),
+            #[cfg(feature = "hinting")]
             hinter: None,
         })
     }
 
+    #[cfg(feature = "hinting")]
     pub(crate) fn hinted(
         outlines: &'a Outlines<'a>,
         outline: &'a Outline,
@@ -525,13 +550,15 @@ impl<'a> FreeTypeScaler<'a> {
         // Use hdmx if hinting is requested and backward compatibility mode
         // is not enabled.
         // <https://gitlab.freedesktop.org/freetype/freetype/-/blob/80a507a6b8e3d2906ad2c8ba69329bd2fb2a85ef/src/truetype/ttgload.c#L2559>
-        let hdmx_width = if self.is_hinted
-            && self
-                .hinter
-                .as_ref()
-                .map(|hinter| !hinter.backward_compatibility())
-                .unwrap_or(true)
-        {
+        #[cfg(feature = "hinting")]
+        let no_backward_compat = self
+            .hinter
+            .as_ref()
+            .map(|hinter| !hinter.backward_compatibility())
+            .unwrap_or(true);
+        #[cfg(not(feature = "hinting"))]
+        let no_backward_compat = true;
+        let hdmx_width = if self.is_hinted && no_backward_compat {
             self.outlines.hdmx_width(self.ppem, glyph_id)
         } else {
             None
@@ -699,6 +726,7 @@ impl Scaler for FreeTypeScaler<'_> {
                 have_deltas = true;
             }
         }
+        #[cfg(feature = "hinting")]
         let ins = glyph.instructions();
         let is_hinted = self.is_hinted;
         if self.scale.is_scaled {
@@ -755,6 +783,7 @@ impl Scaler for FreeTypeScaler<'_> {
         }
         // Commit our potentially modified phantom points.
         self.phantom.copy_from_slice(&scaled[phantom_start..]);
+        #[cfg(feature = "hinting")]
         if let (Some(hinter), true) = (self.hinter.as_ref(), is_hinted) {
             if !ins.is_empty() {
                 // Create a copy of our scaled points in original_scaled.
@@ -823,6 +852,7 @@ impl Scaler for FreeTypeScaler<'_> {
         let scale = self.scale;
         // The base indices of the points and contours for the current glyph.
         let point_base = self.point_count;
+        #[cfg(feature = "hinting")]
         let contour_base = self.contour_count;
         // Compute the per component deltas. Since composites can be nested, we
         // use a stack and keep track of the base.
@@ -995,6 +1025,7 @@ impl Scaler for FreeTypeScaler<'_> {
         if have_deltas {
             self.component_delta_count = delta_base;
         }
+        #[cfg(feature = "hinting")]
         if let (Some(hinter), true) = (self.hinter.as_ref(), self.is_hinted) {
             let ins = glyph.instructions().unwrap_or_default();
             if !ins.is_empty() {
