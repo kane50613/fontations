@@ -9,6 +9,7 @@ use read_fonts::{
 use super::{super::Hinting, Outline};
 
 /// Buffers used during HarfBuzz-style glyph scaling.
+#[cfg(feature = "harfbuzz_path_style")]
 pub(crate) struct HarfBuzzOutlineMemory<'a> {
     pub points: &'a mut [Point<f32>],
     pub contours: &'a mut [u16],
@@ -18,6 +19,7 @@ pub(crate) struct HarfBuzzOutlineMemory<'a> {
     pub composite_deltas: &'a mut [Point<f32>],
 }
 
+#[cfg(feature = "harfbuzz_path_style")]
 impl<'a> HarfBuzzOutlineMemory<'a> {
     pub(super) fn new(outline: &Outline, buf: &'a mut [u8]) -> Option<Self> {
         let (points, buf) = take_slice(buf, outline.points)?;

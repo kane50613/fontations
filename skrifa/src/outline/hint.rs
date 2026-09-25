@@ -426,6 +426,7 @@ impl HintingInstance {
                 instance.draw(self.size, coords, glyph, path_style, pen)
             }
             (HinterKind::Glyf(instance), OutlineKind::Glyf(glyf, outline)) => {
+                #[cfg(feature = "harfbuzz_path_style")]
                 if matches!(path_style, PathStyle::HarfBuzz) {
                     return Err(DrawError::HarfBuzzHintingUnsupported);
                 }

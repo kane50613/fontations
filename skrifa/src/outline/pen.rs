@@ -24,6 +24,7 @@ pub enum PathStyle {
     /// between first and second.
     ///
     /// Matches hb-draw's interpretation of a point stream.
+    #[cfg(feature = "harfbuzz_path_style")]
     HarfBuzz,
 }
 
@@ -31,6 +32,7 @@ impl From<PathStyle> for PathContourStart {
     fn from(style: PathStyle) -> Self {
         match style {
             PathStyle::FreeType => Self::ScanBackward,
+            #[cfg(feature = "harfbuzz_path_style")]
             PathStyle::HarfBuzz => Self::ScanForward,
         }
     }
