@@ -24,6 +24,30 @@ pub trait OutlinePen {
     fn close(&mut self);
 }
 
+/// Forwards to the borrowed pen, so `&mut dyn OutlinePen` draws through one
+/// instantiation of the generic outline code.
+impl<T: OutlinePen + ?Sized> OutlinePen for &mut T {
+    fn move_to(&mut self, x: f32, y: f32) {
+        (**self).move_to(x, y);
+    }
+
+    fn line_to(&mut self, x: f32, y: f32) {
+        (**self).line_to(x, y);
+    }
+
+    fn quad_to(&mut self, cx0: f32, cy0: f32, x: f32, y: f32) {
+        (**self).quad_to(cx0, cy0, x, y);
+    }
+
+    fn curve_to(&mut self, cx0: f32, cy0: f32, cx1: f32, cy1: f32, x: f32, y: f32) {
+        (**self).curve_to(cx0, cy0, cx1, cy1, x, y);
+    }
+
+    fn close(&mut self) {
+        (**self).close();
+    }
+}
+
 /// Single element of a path.
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
 pub enum PathElement {
