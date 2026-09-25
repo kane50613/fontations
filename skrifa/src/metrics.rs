@@ -31,7 +31,7 @@ use read_fonts::{
 };
 
 use crate::{
-    outline::{pen::ControlBoundsPen, DrawSettings, OutlinePen},
+    outline::{pen::ControlBoundsPen, DrawSettings},
     MetadataProvider,
 };
 
@@ -385,9 +385,7 @@ impl GlyphMetrics<'_> {
         if let Some(outline) = self.font.outline_glyphs().get(glyph_id) {
             let settings = DrawSettings::unhinted(self.size, self.coords);
             let mut pen = ControlBoundsPen::default();
-            // Erased so bounds reuse the outline code callers draw `dyn` pens with.
-            let mut erased: &mut dyn OutlinePen = &mut pen;
-            outline.draw(settings, &mut erased).ok()?;
+            outline.draw(settings, &mut pen).ok()?;
             pen.bounding_box()
         } else {
             None

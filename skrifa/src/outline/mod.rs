@@ -368,7 +368,16 @@ impl<'a> OutlineGlyph<'a> {
         settings: impl Into<DrawSettings<'a>>,
         pen: &mut impl OutlinePen,
     ) -> Result<AdjustedMetrics, DrawError> {
-        let settings: DrawSettings<'a> = settings.into();
+        // Erased so every pen type shares one instantiation of the scalers.
+        let mut pen: &mut dyn OutlinePen = pen;
+        self.draw_erased(settings.into(), &mut pen)
+    }
+
+    fn draw_erased(
+        &self,
+        settings: DrawSettings<'a>,
+        pen: &mut &mut dyn OutlinePen,
+    ) -> Result<AdjustedMetrics, DrawError> {
         match (settings.instance, settings.path_style) {
             (DrawInstance::Unhinted(size, location), PathStyle::FreeType) => {
                 self.draw_unhinted(size, location, settings.memory, settings.path_style, pen)
