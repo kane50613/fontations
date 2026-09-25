@@ -170,6 +170,7 @@ pub(crate) fn contour_to_path<C: PointCoord>(
     }
     match style {
         PathStyle::FreeType => contour_to_path_freetype(points, first_point, last_point, pen),
+        #[cfg(feature = "harfbuzz_path_style")]
         PathStyle::HarfBuzz => contour_to_path_harfbuzz(points, first_point, pen),
     }
 }
@@ -219,6 +220,7 @@ fn contour_to_path_freetype<C: PointCoord>(
     Ok(())
 }
 
+#[cfg(feature = "harfbuzz_path_style")]
 fn contour_to_path_harfbuzz<C: PointCoord>(
     points: impl ExactSizeIterator<Item = ContourPoint<C>>,
     first_point: ContourPoint<C>,

@@ -109,7 +109,9 @@ use raw::FontRef;
 #[doc(inline)]
 pub use {error::DrawError, pen::OutlinePen};
 
-use self::glyf::{FreeTypeScaler, HarfBuzzScaler};
+use self::glyf::FreeTypeScaler;
+#[cfg(feature = "harfbuzz_path_style")]
+use self::glyf::HarfBuzzScaler;
 use super::{
     instance::{LocationRef, Size},
     GLYF_COMPOSITE_RECURSION_LIMIT,
@@ -371,6 +373,7 @@ impl<'a> OutlineGlyph<'a> {
             (DrawInstance::Unhinted(size, location), PathStyle::FreeType) => {
                 self.draw_unhinted(size, location, settings.memory, settings.path_style, pen)
             }
+            #[cfg(feature = "harfbuzz_path_style")]
             (DrawInstance::Unhinted(size, location), PathStyle::HarfBuzz) => {
                 self.draw_unhinted(size, location, settings.memory, settings.path_style, pen)
             }
@@ -406,7 +409,7 @@ impl<'a> OutlineGlyph<'a> {
                     Ok(metrics)
                 }
             }
-            #[cfg(feature = "hinting")]
+            #[cfg(all(feature = "hinting", feature = "harfbuzz_path_style"))]
             (DrawInstance::Hinted { .. }, PathStyle::HarfBuzz) => {
                 Err(DrawError::HarfBuzzHintingUnsupported)
             }
@@ -437,6 +440,7 @@ impl<'a> OutlineGlyph<'a> {
                                 scaled_outline.adjusted_advance_width().to_f32(),
                             )
                         }
+                        #[cfg(feature = "harfbuzz_path_style")]
                         PathStyle::HarfBuzz => {
                             let scaled_outline =
                                 HarfBuzzScaler::unhinted(glyf, outline, buf, ppem, coords)?

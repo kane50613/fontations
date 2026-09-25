@@ -20,7 +20,9 @@ use read_fonts::tables::glyf::PointMarker;
 
 use super::{DrawError, GlyphHMetrics, Hinting};
 use crate::GLYF_COMPOSITE_RECURSION_LIMIT;
-use memory::{FreeTypeOutlineMemory, HarfBuzzOutlineMemory};
+use memory::FreeTypeOutlineMemory;
+#[cfg(feature = "harfbuzz_path_style")]
+use memory::HarfBuzzOutlineMemory;
 
 use read_fonts::{
     tables::{
@@ -329,6 +331,7 @@ trait Scaler {
 }
 
 /// f32 all the things. Hold your rounding. No hinting.
+#[cfg(feature = "harfbuzz_path_style")]
 pub(crate) struct HarfBuzzScaler<'a> {
     outlines: &'a Outlines<'a>,
     memory: HarfBuzzOutlineMemory<'a>,
@@ -346,6 +349,7 @@ pub(crate) struct HarfBuzzScaler<'a> {
     phantom: [Point<f32>; PHANTOM_POINT_COUNT],
 }
 
+#[cfg(feature = "harfbuzz_path_style")]
 impl<'a> HarfBuzzScaler<'a> {
     pub(crate) fn unhinted(
         outlines: &'a Outlines<'a>,
@@ -1083,6 +1087,7 @@ impl Scaler for FreeTypeScaler<'_> {
     }
 }
 
+#[cfg(feature = "harfbuzz_path_style")]
 impl Scaler for HarfBuzzScaler<'_> {
     fn setup_phantom_points(
         &mut self,
@@ -1350,10 +1355,12 @@ impl Scaler for HarfBuzzScaler<'_> {
 }
 
 /// Magnitude of the vector (x, y)
+#[cfg(feature = "harfbuzz_path_style")]
 fn hypot(x: f32, y: f32) -> f32 {
     x.hypot(y)
 }
 
+#[cfg(feature = "harfbuzz_path_style")]
 fn map_point(transform: [f32; 6], p: Point<f32>) -> Point<f32> {
     Point {
         x: transform[0] * p.x + transform[2] * p.y + transform[4],

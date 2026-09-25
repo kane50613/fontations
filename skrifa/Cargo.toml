@@ -16,13 +16,16 @@ repository.workspace = true
 all-features = true
 
 [features]
-default = ["std", "hinting", "autohint_shaping"]
+default = ["std", "hinting", "harfbuzz_path_style", "autohint_shaping"]
 std = ["read-fonts/std"]
 traversal = ["std", "read-fonts/experimental_traverse"]
 # Enables the TrueType hinting interpreter and the autohinter. Disabling it
 # removes `HintingInstance` and shrinks binaries that only draw unhinted
 # outlines.
 hinting = []
+# Enables `PathStyle::HarfBuzz`. Disabling it removes the HarfBuzz-style
+# TrueType scaler from binaries that only draw FreeType-style paths.
+harfbuzz_path_style = []
 # Enables extended shaping support for the autohinter. Enabled by default.
 # This exists as a feature because shaping support is "best effort" and
 # we want the ability to disable it for testing against FreeType.
