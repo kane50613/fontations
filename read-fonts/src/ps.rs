@@ -11,4 +11,5 @@ pub mod hinting;
 mod num;
 pub mod string;
 pub mod transform;
+#[cfg(feature = "type1")]
 pub mod type1;

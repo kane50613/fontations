@@ -80,6 +80,7 @@ impl<'a> TableDataProvider<'a> for &'a TableFunction {
 
 /// Source for a set of font tables.
 enum TableSource {
+    #[cfg(feature = "type1")]
     None,
     Blob(BlobTables),
     Function(TableFunction),
@@ -195,6 +196,7 @@ impl Tables {
     }
 }
 
+#[cfg(feature = "type1")]
 pub(super) static EMPTY_FONT_TABLES: Tables = Tables(TableSource::None);
 
 impl<'a> TableProvider<'a> for &'a Tables {

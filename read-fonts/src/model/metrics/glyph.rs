@@ -4,17 +4,15 @@
 #[allow(unused_imports)]
 use core_maths::CoreFloat;
 
+#[cfg(feature = "type1")]
+use crate::{model::Kind, ps::cs::CommandSink, ps::type1::Type1Font};
 use crate::{
     mem::with_scratch,
     model::{
         metrics::{LineExtents, Metrics, Scale, ScaledGlyphMetrics},
-        Font, Kind,
+        Font,
     },
-    ps::{
-        cff::{CffFontRef, Subfont},
-        cs::CommandSink,
-        type1::Type1Font,
-    },
+    ps::cff::{CffFontRef, Subfont},
     tables::{
         glyf::outline::{Buffers, OutlineContext, OutlinePlan, ScaleF32 as OutlineScaleF32},
         hmtx::LongMetric,
@@ -111,6 +109,7 @@ impl<'a> GlyphMetrics<'a> {
             // a table, so it reaches here and is measured another way. The
             // test sits inside this branch so that a font with `hmtx`, which
             // is nearly all of them, never makes it.
+            #[cfg(feature = "type1")]
             if let Kind::Type1(font) = self.font.kind() {
                 return self.h_advance_batched_type1(font, convert, glyphs);
             }
@@ -299,6 +298,7 @@ impl<'a> GlyphMetrics<'a> {
         if let Some(cff) = self.font.cff() {
             return self.extents_batched_cff(cff, convert, glyphs);
         }
+        #[cfg(feature = "type1")]
         if let Kind::Type1(font) = self.font.kind() {
             return self.extents_batched_type1(font, convert, glyphs);
         }
@@ -493,6 +493,7 @@ impl<'a> GlyphMetrics<'a> {
     /// `#[inline(never)]` for the same reason as
     /// [`h_advance_batched_type1`](Self::h_advance_batched_type1).
     #[inline(never)]
+    #[cfg(feature = "type1")]
     fn extents_batched_type1<'o, V: 'o>(
         &self,
         font: &Type1Font,
@@ -612,6 +613,7 @@ impl<'a> GlyphMetrics<'a> {
     /// running it. `#[inline(never)]` because that has nothing in common with
     /// reading a table, and no `sfnt` should pay for its presence.
     #[inline(never)]
+    #[cfg(feature = "type1")]
     fn h_advance_batched_type1<'o, V: 'o>(
         &self,
         font: &Type1Font,

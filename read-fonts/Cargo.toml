@@ -33,7 +33,10 @@ experimental_font_api = []
 # and cargo fails to resolve a feature that does not exist. Keeping it empty
 # lets them upgrade before they edit their manifests.
 experimental_traverse = []
-default = ["std"]
+default = ["std", "type1"]
+# Enables PostScript Type 1 font parsing and metrics. Disabling it removes Type 1
+# support from binaries that only load OpenType/TrueType/CFF fonts.
+type1 = []
 serde = ["dep:serde", "font-types/serde"]
 libm = ["dep:core_maths"]
 # Support for mapping glyph names <-> unicode via the Adobe glyph list
@@ -76,3 +79,4 @@ harness = false
 [[bench]]
 name = "type1"
 harness = false
+required-features = ["type1"]

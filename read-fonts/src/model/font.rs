@@ -32,8 +32,10 @@ use crate::tables::{
     vorg::Vorg,
     vvar::Vvar,
 };
+#[cfg(feature = "type1")]
+use crate::ps::type1::Type1Font;
 use crate::{
-    ps::{cff::CffFontRef, type1::Type1Font},
+    ps::cff::CffFontRef,
     TableProvider,
 };
 use alloc::{boxed::Box, sync::Arc, vec::Vec};
@@ -760,12 +762,18 @@ impl SharedFont {
         let kind = if let Ok(tables) = Tables::new(source.clone(), index) {
             Some(KindRepr::Sfnt(Arc::new(tables), index))
         } else if let Source::Blob(blob) = &source {
+            #[cfg(feature = "type1")]
             match Format::new(blob) {
                 Some(Format::Type1) => Type1Font::new(blob)
                     .ok()
                     .map(|font| KindRepr::Type1(Box::new(font))),
                 // TODO: pure CFF fonts
                 _ => None,
+            }
+            #[cfg(not(feature = "type1"))]
+            {
+                let _ = blob;
+                None
             }
         } else {
             None
@@ -800,6 +808,7 @@ impl SharedFont {
     fn kind(&self) -> Kind<'_> {
         match &self.0.kind {
             KindRepr::Sfnt(tables, index) => Kind::Sfnt(tables, *index),
+            #[cfg(feature = "type1")]
             KindRepr::Type1(font) => Kind::Type1(font),
         }
     }
@@ -809,6 +818,7 @@ impl SharedFont {
     #[inline]
     fn metrics(&self) -> &Metrics {
         self.0.metrics.get_or_init(|| match self.kind() {
+            #[cfg(feature = "type1")]
             Kind::Type1(font) => Metrics::from_type1(font),
             _ => Metrics::from_sfnt(&self.tables(), &[]),
         })
@@ -820,6 +830,7 @@ impl SharedFont {
             .style_metrics
             .get_or_init(|| {
                 Box::new(match self.kind() {
+                    #[cfg(feature = "type1")]
                     Kind::Type1(font) => StyleMetrics::from_type1(font),
                     _ => StyleMetrics::from_sfnt(&self.tables(), &[]),
                 })
@@ -847,6 +858,7 @@ impl SharedFont {
     fn tables_arc(&self) -> Option<&Arc<Tables>> {
         match &self.0.kind {
             KindRepr::Sfnt(tables, _) => Some(tables),
+            #[cfg(feature = "type1")]
             _ => None,
         }
     }
@@ -995,10 +1007,10 @@ impl SharedFont {
     ///
     /// For non-SFNT fonts, this will return an empty set of tables.
     fn tables(&self) -> &Tables {
-        if let KindRepr::Sfnt(tables, _) = &self.0.kind {
-            tables
-        } else {
-            &tables::EMPTY_FONT_TABLES
+        match &self.0.kind {
+            KindRepr::Sfnt(tables, _) => tables,
+            #[cfg(feature = "type1")]
+            _ => &tables::EMPTY_FONT_TABLES,
         }
     }
 }
@@ -1045,6 +1057,7 @@ pub enum Kind<'a> {
     /// An SFNT-based font represented by a set of tables and an index.
     Sfnt(&'a Tables, u32),
     /// An Adobe Type1 font.
+    #[cfg(feature = "type1")]
     Type1(&'a Type1Font),
     /// A CFF font with an associated index.
     Cff(CffFontRef<'a>, u32),
@@ -1055,6 +1068,7 @@ enum KindRepr {
     Sfnt(Arc<Tables>, u32),
     // Boxed: a `Type1Font` is an order of magnitude larger than the sfnt
     // variant, and inline it would be paid by every font that is not one.
+    #[cfg(feature = "type1")]
     Type1(Box<Type1Font>),
 }
 

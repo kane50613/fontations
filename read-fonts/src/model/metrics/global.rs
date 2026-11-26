@@ -2,8 +2,9 @@
 
 use super::metric;
 
+#[cfg(feature = "type1")]
+use crate::ps::type1::Type1Font;
 use crate::{
-    ps::type1::Type1Font,
     tables::{mvar::tags, os2::SelectionFlags},
     TableProvider,
 };
@@ -233,6 +234,7 @@ impl Metrics {
     /// ascender and descender are the top and bottom of that box, as FreeType
     /// takes them, since the font states none of its own. Everything else is
     /// unset.
+    #[cfg(feature = "type1")]
     pub fn from_type1(font: &Type1Font) -> Self {
         let bbox = font.bbox();
         let bounds = BoundingBox {

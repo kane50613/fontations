@@ -1,8 +1,12 @@
 //! Names of individual glyphs.
 
-use super::super::{Font, Kind};
+use super::super::Font;
+#[cfg(feature = "type1")]
+use super::super::Kind;
+#[cfg(feature = "type1")]
+use crate::ps::type1::Type1Font;
 use crate::{
-    ps::{cff::charset, type1::Type1Font},
+    ps::cff::charset,
     tables::{cff::Cff, post},
     types::GlyphId16,
     TableProvider,
@@ -124,11 +128,13 @@ impl fmt::Write for GlyphNameWrite<'_> {
 enum NameSource<'a> {
     Post(post::Post<'a>),
     Cff(Cff<'a>, charset::Charset<'a>),
+    #[cfg(feature = "type1")]
     Type1(&'a Type1Font),
     Synthesized,
 }
 
 fn source(font: &Font) -> NameSource<'_> {
+    #[cfg(feature = "type1")]
     if let Kind::Type1(type1) = font.kind() {
         return NameSource::Type1(type1);
     }
@@ -158,6 +164,7 @@ pub(crate) fn glyph_name(font: &Font, glyph: GlyphId) -> Option<GlyphName> {
             .string_id(glyph)
             .and_then(|id| cff.string(id))
             .and_then(|value| GlyphName::from_bytes(value, GlyphNameSource::Cff)),
+        #[cfg(feature = "type1")]
         NameSource::Type1(type1) => type1
             .glyph_name(glyph)
             .and_then(|value| GlyphName::from_bytes(value.as_bytes(), GlyphNameSource::Type1)),
@@ -169,6 +176,7 @@ pub(crate) fn glyph_name(font: &Font, glyph: GlyphId) -> Option<GlyphName> {
 enum NameIterSource<'a> {
     Post(post::GlyphNames<'a>),
     Cff(Cff<'a>, charset::Iter<'a>),
+    #[cfg(feature = "type1")]
     Type1(&'a Type1Font),
     Synthesized,
 }
@@ -183,6 +191,7 @@ pub(crate) fn glyph_names(font: &Font) -> impl ExactSizeIterator<Item = (GlyphId
     let source = match source(font) {
         NameSource::Post(post) => NameIterSource::Post(post.glyph_names()),
         NameSource::Cff(cff, charset) => NameIterSource::Cff(cff, charset.iter()),
+        #[cfg(feature = "type1")]
         NameSource::Type1(type1) => NameIterSource::Type1(type1),
         NameSource::Synthesized => NameIterSource::Synthesized,
     };
@@ -217,6 +226,7 @@ impl Iterator for NameIter<'_> {
                     .flatten()
                     .and_then(|value| GlyphName::from_bytes(value, GlyphNameSource::Cff))
             }),
+            #[cfg(feature = "type1")]
             NameIterSource::Type1(type1) => type1
                 .glyph_name(glyph)
                 .and_then(|value| GlyphName::from_bytes(value.as_bytes(), GlyphNameSource::Type1)),

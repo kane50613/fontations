@@ -416,6 +416,7 @@ impl Tables {
 
     fn ankr_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.ankr(),
             TableSource::Function(func) => func.ankr(),
@@ -431,6 +432,7 @@ impl Tables {
 
     fn avar_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.avar(),
             TableSource::Function(func) => func.avar(),
@@ -446,6 +448,7 @@ impl Tables {
 
     fn base_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.base(),
             TableSource::Function(func) => func.base(),
@@ -461,6 +464,7 @@ impl Tables {
 
     fn cff_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.cff(),
             TableSource::Function(func) => func.cff(),
@@ -476,6 +480,7 @@ impl Tables {
 
     fn cff2_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.cff2(),
             TableSource::Function(func) => func.cff2(),
@@ -491,6 +496,7 @@ impl Tables {
 
     fn cbdt_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.cbdt(),
             TableSource::Function(func) => func.cbdt(),
@@ -506,6 +512,7 @@ impl Tables {
 
     fn cblc_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.cblc(),
             TableSource::Function(func) => func.cblc(),
@@ -521,6 +528,7 @@ impl Tables {
 
     fn colr_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.colr(),
             TableSource::Function(func) => func.colr(),
@@ -536,6 +544,7 @@ impl Tables {
 
     fn cpal_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.cpal(),
             TableSource::Function(func) => func.cpal(),
@@ -551,6 +560,7 @@ impl Tables {
 
     fn cmap_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.cmap(),
             TableSource::Function(func) => func.cmap(),
@@ -566,6 +576,7 @@ impl Tables {
 
     fn cvar_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.cvar(),
             TableSource::Function(func) => func.cvar(),
@@ -581,6 +592,7 @@ impl Tables {
 
     fn cvt_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.cvt(),
             TableSource::Function(func) => func.cvt(),
@@ -596,6 +608,7 @@ impl Tables {
 
     fn dsig_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.dsig(),
             TableSource::Function(func) => func.dsig(),
@@ -611,6 +624,7 @@ impl Tables {
 
     fn ebdt_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.ebdt(),
             TableSource::Function(func) => func.ebdt(),
@@ -626,6 +640,7 @@ impl Tables {
 
     fn eblc_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.eblc(),
             TableSource::Function(func) => func.eblc(),
@@ -641,6 +656,7 @@ impl Tables {
 
     fn feat_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.feat(),
             TableSource::Function(func) => func.feat(),
@@ -656,6 +672,7 @@ impl Tables {
 
     fn fpgm_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.fpgm(),
             TableSource::Function(func) => func.fpgm(),
@@ -671,6 +688,7 @@ impl Tables {
 
     fn fvar_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.fvar(),
             TableSource::Function(func) => func.fvar(),
@@ -686,6 +704,7 @@ impl Tables {
 
     fn gasp_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.gasp(),
             TableSource::Function(func) => func.gasp(),
@@ -701,6 +720,7 @@ impl Tables {
 
     fn gdef_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.gdef(),
             TableSource::Function(func) => func.gdef(),
@@ -716,6 +736,7 @@ impl Tables {
 
     fn glyf_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.glyf(),
             TableSource::Function(func) => func.glyf(),
@@ -731,6 +752,7 @@ impl Tables {
 
     fn gpos_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.gpos(),
             TableSource::Function(func) => func.gpos(),
@@ -746,6 +768,7 @@ impl Tables {
 
     fn gsub_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.gsub(),
             TableSource::Function(func) => func.gsub(),
@@ -761,6 +784,7 @@ impl Tables {
 
     fn gvar_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.gvar(),
             TableSource::Function(func) => func.gvar(),
@@ -776,6 +800,7 @@ impl Tables {
 
     fn hdmx_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.hdmx(),
             TableSource::Function(func) => func.hdmx(),
@@ -791,6 +816,7 @@ impl Tables {
 
     fn head_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.head(),
             TableSource::Function(func) => func.head(),
@@ -806,6 +832,7 @@ impl Tables {
 
     fn hhea_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.hhea(),
             TableSource::Function(func) => func.hhea(),
@@ -821,6 +848,7 @@ impl Tables {
 
     fn hmtx_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.hmtx(),
             TableSource::Function(func) => func.hmtx(),
@@ -836,6 +864,7 @@ impl Tables {
 
     fn hvar_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.hvar(),
             TableSource::Function(func) => func.hvar(),
@@ -851,6 +880,7 @@ impl Tables {
 
     fn ift_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.ift(),
             TableSource::Function(func) => func.ift(),
@@ -866,6 +896,7 @@ impl Tables {
 
     fn iftx_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.iftx(),
             TableSource::Function(func) => func.iftx(),
@@ -881,6 +912,7 @@ impl Tables {
 
     fn jstf_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.jstf(),
             TableSource::Function(func) => func.jstf(),
@@ -896,6 +928,7 @@ impl Tables {
 
     fn kern_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.kern(),
             TableSource::Function(func) => func.kern(),
@@ -911,6 +944,7 @@ impl Tables {
 
     fn kerx_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.kerx(),
             TableSource::Function(func) => func.kerx(),
@@ -926,6 +960,7 @@ impl Tables {
 
     fn loca_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.loca(),
             TableSource::Function(func) => func.loca(),
@@ -941,6 +976,7 @@ impl Tables {
 
     fn ltag_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.ltag(),
             TableSource::Function(func) => func.ltag(),
@@ -956,6 +992,7 @@ impl Tables {
 
     fn math_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.math(),
             TableSource::Function(func) => func.math(),
@@ -971,6 +1008,7 @@ impl Tables {
 
     fn maxp_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.maxp(),
             TableSource::Function(func) => func.maxp(),
@@ -986,6 +1024,7 @@ impl Tables {
 
     fn meta_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.meta(),
             TableSource::Function(func) => func.meta(),
@@ -1001,6 +1040,7 @@ impl Tables {
 
     fn mort_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.mort(),
             TableSource::Function(func) => func.mort(),
@@ -1016,6 +1056,7 @@ impl Tables {
 
     fn morx_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.morx(),
             TableSource::Function(func) => func.morx(),
@@ -1031,6 +1072,7 @@ impl Tables {
 
     fn mvar_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.mvar(),
             TableSource::Function(func) => func.mvar(),
@@ -1046,6 +1088,7 @@ impl Tables {
 
     fn name_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.name(),
             TableSource::Function(func) => func.name(),
@@ -1061,6 +1104,7 @@ impl Tables {
 
     fn os2_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.os2(),
             TableSource::Function(func) => func.os2(),
@@ -1076,6 +1120,7 @@ impl Tables {
 
     fn post_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.post(),
             TableSource::Function(func) => func.post(),
@@ -1091,6 +1136,7 @@ impl Tables {
 
     fn prep_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.prep(),
             TableSource::Function(func) => func.prep(),
@@ -1106,6 +1152,7 @@ impl Tables {
 
     fn sbix_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.sbix(),
             TableSource::Function(func) => func.sbix(),
@@ -1121,6 +1168,7 @@ impl Tables {
 
     fn stat_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.stat(),
             TableSource::Function(func) => func.stat(),
@@ -1136,6 +1184,7 @@ impl Tables {
 
     fn svg_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.svg(),
             TableSource::Function(func) => func.svg(),
@@ -1151,6 +1200,7 @@ impl Tables {
 
     fn trak_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.trak(),
             TableSource::Function(func) => func.trak(),
@@ -1166,6 +1216,7 @@ impl Tables {
 
     fn varc_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.varc(),
             TableSource::Function(func) => func.varc(),
@@ -1181,6 +1232,7 @@ impl Tables {
 
     fn vhea_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.vhea(),
             TableSource::Function(func) => func.vhea(),
@@ -1196,6 +1248,7 @@ impl Tables {
 
     fn vmtx_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.vmtx(),
             TableSource::Function(func) => func.vmtx(),
@@ -1211,6 +1264,7 @@ impl Tables {
 
     fn vorg_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.vorg(),
             TableSource::Function(func) => func.vorg(),
@@ -1226,6 +1280,7 @@ impl Tables {
 
     fn vvar_state(&self) -> Option<TableState<'_>> {
         match &self.0 {
+            #[cfg(feature = "type1")]
             TableSource::None => None,
             TableSource::Blob(blob) => blob.vvar(),
             TableSource::Function(func) => func.vvar(),

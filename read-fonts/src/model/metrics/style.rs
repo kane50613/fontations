@@ -1,7 +1,9 @@
 //! Metrics used to style text and decorations.
 
 use super::metric;
-use crate::{ps::type1::Type1Font, tables::mvar::tags, TableProvider};
+#[cfg(feature = "type1")]
+use crate::ps::type1::Type1Font;
+use crate::{tables::mvar::tags, TableProvider};
 use types::{F2Dot14, F48Dot16, Fixed};
 
 /// The size and placement of a subscript or superscript em box.
@@ -106,6 +108,7 @@ impl StyleMetrics {
     ///
     /// Its underline center is converted to the top edge used by
     /// [`Decoration`]. Type 1 states no subscript, superscript or strikeout.
+    #[cfg(feature = "type1")]
     pub fn from_type1(font: &Type1Font) -> Self {
         // Type 1 locates the underline by its center, whereas `post` locates
         // its top edge. Keep the public decoration convention consistent.

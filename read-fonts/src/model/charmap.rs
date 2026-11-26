@@ -1,9 +1,11 @@
 //! Character mappings for a font.
 
+#[cfg(feature = "type1")]
+use crate::ps::encoding::PredefinedEncoding;
+#[cfg(feature = "type1")]
+use crate::ps::type1::Type1Font;
 use crate::{
     model::Font,
-    ps::encoding::PredefinedEncoding,
-    ps::type1::Type1Font,
     tables::{
         cmap::{Cmap14, CmapIterLimits, CmapSubtable, MapVariant, PlatformId},
         name::MacRomanMapping,
@@ -67,6 +69,7 @@ impl<'a> Charmap<'a> {
     /// For Type 1 fonts, this requires a nonempty glyph-name-derived map.
     pub fn has_unicode(&self) -> bool {
         match self.font.kind() {
+            #[cfg(feature = "type1")]
             crate::model::Kind::Type1(font) => font.unicode_charmap().iter().next().is_some(),
             _ => self
                 .font
@@ -94,6 +97,7 @@ impl<'a> Charmap<'a> {
     pub fn map_unicode(&self, codepoint: impl Into<u32>) -> Option<GlyphId> {
         let codepoint = codepoint.into();
         let glyph = match self.font.kind() {
+            #[cfg(feature = "type1")]
             crate::model::Kind::Type1(font) => font.unicode_charmap().map(codepoint),
             _ => self.font.unicode_charmap()?.map(codepoint),
         };
@@ -104,11 +108,15 @@ impl<'a> Charmap<'a> {
     ///
     /// Type 1 mappings are derived from glyph names when `agl` is enabled.
     pub fn iter_unicodes(&self) -> impl Iterator<Item = (u32, GlyphId)> + '_ {
+        #[cfg(feature = "type1")]
         let type1 = match self.font.kind() {
             crate::model::Kind::Type1(font) => Some(font),
             _ => None,
-        };
-        let type1 = type1.into_iter().flat_map(iter_type1_unicodes);
+        }
+        .into_iter()
+        .flat_map(iter_type1_unicodes);
+        #[cfg(not(feature = "type1"))]
+        let type1 = core::iter::empty();
         let sfnt = self.font.unicode_charmap().into_iter().flat_map(|map| {
             map.iter(CmapIterLimits {
                 max_char: char::MAX as u32,
@@ -180,16 +188,22 @@ impl<'a> Charmap<'a> {
             .encoding_tables()
             .into_iter()
             .flat_map(EncodingTables::iter);
-        let type1 = match self.font.kind() {
-            crate::model::Kind::Type1(font) => Some(font),
-            _ => None,
+        #[cfg(feature = "type1")]
+        let (unicode, native) = {
+            let type1 = match self.font.kind() {
+                crate::model::Kind::Type1(font) => Some(font),
+                _ => None,
+            };
+            let unicode = type1
+                .filter(|font| font.unicode_charmap().iter().next().is_some())
+                .map(|_| Encoding::type1_unicode());
+            let native = type1
+                .and_then(|font| font.encoding())
+                .map(|encoding| Encoding::type1_native(encoding.predefined()));
+            (unicode, native)
         };
-        let unicode = type1
-            .filter(|font| font.unicode_charmap().iter().next().is_some())
-            .map(|_| Encoding::type1_unicode());
-        let native = type1
-            .and_then(|font| font.encoding())
-            .map(|encoding| Encoding::type1_native(encoding.predefined()));
+        #[cfg(not(feature = "type1"))]
+        let (unicode, native) = (Option::<Encoding>::None, Option::<Encoding>::None);
         sfnt.chain(unicode).chain(native)
     }
 
@@ -200,9 +214,11 @@ impl<'a> Charmap<'a> {
     /// is treated as unmapped.
     pub fn map_code(&self, encoding: Encoding, code: u32) -> Option<GlyphId> {
         let glyph = match self.font.kind() {
+            #[cfg(feature = "type1")]
             crate::model::Kind::Type1(font) if encoding == Encoding::type1_unicode() => {
                 font.unicode_charmap().map(code)
             }
+            #[cfg(feature = "type1")]
             crate::model::Kind::Type1(font) => {
                 let native = font.encoding()?;
                 if encoding != Encoding::type1_native(native.predefined()) {
@@ -222,22 +238,28 @@ impl<'a> Charmap<'a> {
     /// symbol fallback are only used by the Unicode methods. Mappings to glyph
     /// 0 are omitted.
     pub fn iter_codes(&self, encoding: Encoding) -> impl Iterator<Item = (u32, GlyphId)> + '_ {
-        let type1 = match self.font.kind() {
-            crate::model::Kind::Type1(font) => Some(font),
-            _ => None,
+        #[cfg(feature = "type1")]
+        let (type1_unicode, type1_native) = {
+            let type1 = match self.font.kind() {
+                crate::model::Kind::Type1(font) => Some(font),
+                _ => None,
+            };
+            let type1_unicode = type1
+                .filter(|_| encoding == Encoding::type1_unicode())
+                .into_iter()
+                .flat_map(iter_type1_unicodes);
+            let type1_native = type1
+                .and_then(|font| font.encoding())
+                .filter(|native| encoding == Encoding::type1_native(native.predefined()))
+                .into_iter()
+                .flat_map(|native| {
+                    (0_u32..=255)
+                        .filter_map(move |code| native.map(code as u8).map(|glyph| (code, glyph)))
+                });
+            (type1_unicode, type1_native)
         };
-        let type1_unicode = type1
-            .filter(|_| encoding == Encoding::type1_unicode())
-            .into_iter()
-            .flat_map(iter_type1_unicodes);
-        let type1_native = type1
-            .and_then(|font| font.encoding())
-            .filter(|native| encoding == Encoding::type1_native(native.predefined()))
-            .into_iter()
-            .flat_map(|native| {
-                (0_u32..=255)
-                    .filter_map(move |code| native.map(code as u8).map(|glyph| (code, glyph)))
-            });
+        #[cfg(not(feature = "type1"))]
+        let (type1_unicode, type1_native) = (core::iter::empty(), core::iter::empty());
         let sfnt = self
             .font
             .encoding_tables()
@@ -258,6 +280,7 @@ impl<'a> Charmap<'a> {
     }
 }
 
+#[cfg(feature = "type1")]
 fn iter_type1_unicodes(font: &Type1Font) -> impl Iterator<Item = (u32, GlyphId)> + '_ {
     let map = font.unicode_charmap();
     map.iter()
@@ -324,6 +347,7 @@ pub struct Encoding {
 
 impl Encoding {
     const TYPE1_UNICODE: u32 = u32::MAX - 1;
+    #[cfg(feature = "type1")]
     const TYPE1_NATIVE: u32 = u32::MAX;
 
     /// Returns the FreeType-compatible encoding kind.
@@ -342,6 +366,7 @@ impl Encoding {
             .map(|_| (self.platform_id, self.encoding_id))
     }
 
+    #[cfg(feature = "type1")]
     pub(crate) fn type1_unicode() -> Self {
         Self {
             kind: EncodingKind::Unicode,
@@ -351,6 +376,7 @@ impl Encoding {
         }
     }
 
+    #[cfg(feature = "type1")]
     pub(crate) fn type1_native(predefined: Option<PredefinedEncoding>) -> Self {
         let kind = match predefined {
             Some(PredefinedEncoding::Standard) => EncodingKind::AdobeStandard,
